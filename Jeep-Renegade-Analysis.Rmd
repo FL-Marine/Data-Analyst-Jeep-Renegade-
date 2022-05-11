@@ -1,0 +1,207 @@
+---
+title: "Jeep Analysis R"
+author: "Abe"
+date: '2022-05-07'
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Jeep Renegade Analysis Summary
+
+This R Markdown Document is about Jeep customer data. This data set was given to me as part of a take home assignment for a job interview. I conducted the initial analysis in Excel and built the visualizations in Tableau.
+
+## Loading Dataset & Libraries
+
+Libraries include:
+
+-   dplyr
+
+-   ggplot2
+
+-   readxl
+
+```{r, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(esquisse)
+jeepdata <- read_excel("C:/Users/abedi/OneDrive/Documents/R Projects/Jeep Renegade Analysis/Jeep Customer Data.xlsx")
+# include=FALSE prevents code from appearing in PDF
+```
+
+## Checking data frame structure
+
+Understanding what variables make up the data frame is crucial prior to analysis. Since, I will be using ggplot later in my analysis I must see what variables need to be factors. Factors are data types used to identify categories. ggplot works best with factors and it is best practice to change any variable to factors prior to analysis.
+
+```{r}
+str(jeepdata)
+```
+
+### Variables to be changed to factor
+
+1.  CHANNEL
+2.  FORM_NAME
+3.  BROWSER
+4.  COUNTRY
+5.  VISTOR_TYPE
+
+```{r, include=FALSE}
+jeepdata <- jeepdata %>% 
+  mutate(CHANNEL = as.factor(CHANNEL),
+         FORM_NAME = as.factor(FORM_NAME),
+         BROWSER = as.factor(BROWSER),
+         COUNTRY = as.factor(COUNTRY),
+         VISITOR_TYPE = as.factor(VISITOR_TYPE))
+```
+
+#### Verifying the new data types for the above variables
+
+```{r}
+str(jeepdata)
+```
+
+## Plot Analysis
+
+USA has the highest count of unique visitors.
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  theme_bw() +
+  geom_bar(aes(x = COUNTRY, fill = UNIQUE_VISITORS)) +
+  labs(y = "Unique Vistor Count", x = "Country",
+       title = "Unique Vistor Count by Country")
+# Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```
+
+USA makes up the biggest form counts compared to all other countries.
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  aes(x = FORM_NAME, fill = COUNTRY, weight = `FORM STARTS`) +
+  geom_bar() +
+  scale_fill_hue(direction = 1) +
+  theme_minimal() +
+  labs(y = "Country Count", x = "Form Name",
+       title = "Forms by Country")
+```
+
+USA makes up most of the data points in form starts and completes
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  aes(
+    x = `FORM STARTS`,
+    y = `FORM COMPLETES`,
+    colour = COUNTRY
+  ) +
+  geom_point(shape = "circle", size = 1.9) +
+  scale_color_hue(direction = -1) +
+  labs(title = "Form Starts and Completes by Country") +
+  theme_minimal()
+```
+
+Organic Search has the most returning visitors compared to other channels
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  aes(x = CHANNEL, fill = VISITOR_TYPE) +
+  geom_bar() +
+  scale_fill_hue(direction = 1) +
+  labs(
+    x = "Channel",
+    y = "Count of Channel",
+    title = "Count of Channel by Visitor Type",
+    fill = "Visitor Type"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+Although overall counts per channel favored Organic Search, a higher percentage of returning visitors 70-74% used Direct Mail and Build & Price Tool.
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  aes(x = CHANNEL, fill = VISITOR_TYPE) +
+  geom_bar(position = "fill") +
+  scale_fill_hue(direction = 1) +
+  labs(
+    x = "Channel",
+    y = "Percentage",
+    title = "Visitor Type per Channel Proportions",
+    fill = "Visitor Type"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+Chrome, Safari, and Internet have more returning customer start forms.
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  aes(x = VISITOR_TYPE, y = `FORM STARTS`) +
+  geom_col(fill = "#112446") +
+  labs(
+    x = "Visitor Type",
+    y = "Visitor Counts",
+    title = "Form Starts by Browser"
+  ) +
+  theme_minimal() +
+  facet_wrap(vars(BROWSER), scales = "free")
+```
+Across all browsers returning customers are more likely to complete the forms.
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  aes(x = VISITOR_TYPE, y = `FORM COMPLETES`) +
+  geom_col(fill = "#112446") +
+  labs(
+    x = "Visitor Type",
+    y = "Visitor Counts",
+    title = "Form completes by Browser"
+  ) +
+  theme_minimal() +
+  facet_wrap(vars(BROWSER), scales = "free")
+```
+Form B has the most Organic Search starts.
+
+```{r, echo=FALSE}
+jeepdata %>%
+ filter(!(FORM_NAME %in% "NONE")) %>%
+ ggplot() +
+  aes(x = CHANNEL, y = `FORM STARTS`) +
+  geom_col(fill = "#112446") +
+  theme_minimal() +
+  facet_wrap(vars(FORM_NAME))
+```
+
+Form B has the most Organic Search completes.
+
+```{r, echo=FALSE}
+jeepdata %>%
+ filter(!(FORM_NAME %in% "NONE")) %>%
+ ggplot() +
+  aes(x = CHANNEL, y = `FORM COMPLETES`) +
+  geom_col(fill = "#112446") +
+  theme_minimal() +
+  facet_wrap(vars(FORM_NAME))
+```
+
+Highest count of visitors appears to be in May with returning visitors dominating across all months.
+
+```{r, echo=FALSE}
+ggplot(jeepdata) +
+  aes(
+    x = `NEW DATE`,
+    fill = VISITOR_TYPE,
+    weight = UNIQUE_VISITORS
+  ) +
+  geom_bar() +
+  scale_fill_hue(direction = 1) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
