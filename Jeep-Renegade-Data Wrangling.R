@@ -183,7 +183,7 @@ memory.limit(size = 50000)
 new_jeep_data <- jeepdata %>% 
   inner_join(newjeepdata, by = "FORM_NAME")
 # for some reason my obs are 2M will have to figure this out and join another way
-
+# joins do not work well with character strings
 
 ## rbind -------------------------------------------------------------------
 
@@ -202,3 +202,7 @@ View(rbind_jeepdata)
 
 # Arranging Data ----------------------------------------------------------
 
+my_jeep <- jeepdata %>% 
+  arrange(desc(`FORM STARTS`), `FORM COMPLETES`)
+View(my_jeep)
+# Ascending order is the default, when descending is required used desc
